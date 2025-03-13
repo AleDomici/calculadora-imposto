@@ -5,6 +5,15 @@ public class ImpostoRequest {
     private String descricao;
     private Double aliquota;
 
+    public ImpostoRequest() {
+    }
+
+    public ImpostoRequest(String nome, String descricao, Double aliquota) {
+        this.nome = nome;
+        this.descricao = descricao;
+        this.aliquota = aliquota;
+    }
+
     public String getNome() {
         return nome;
     }
