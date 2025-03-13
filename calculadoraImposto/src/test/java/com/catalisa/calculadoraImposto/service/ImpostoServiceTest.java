@@ -1,5 +1,6 @@
 package com.catalisa.calculadoraImposto.service;
 
+import com.catalisa.calculadoraImposto.dto.ImpostoRequest;
 import com.catalisa.calculadoraImposto.dto.ImpostoResponse;
 import com.catalisa.calculadoraImposto.exception.ResourceNotFoundException;
 import com.catalisa.calculadoraImposto.model.Imposto;
@@ -10,9 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,7 +29,7 @@ class ImpostoServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    // Testes para o método listarTodos
+    // Teste para listar todos os impostos
     @Test
     void listarTodos_DeveRetornarListaDeImpostos() {
         // Arrange
@@ -47,7 +46,68 @@ class ImpostoServiceTest {
         assertEquals("ISS", result.get(1).getNome());
     }
 
-    // Testes para o método excluir
+    // Teste para cadastrar um novo imposto
+    @Test
+    void cadastrar_DeveSalvarEDevolverImposto() {
+        // Arrange
+        ImpostoRequest request = new ImpostoRequest("IPI", "Imposto sobre Produtos Industrializados", 10.0);
+        Imposto impostoSalvo = criarImposto(1L, "IPI", "Imposto sobre Produtos Industrializados", 10.0);
+        when(impostoRepository.existsByNomeIgnoreCase(request.getNome())).thenReturn(false);
+        when(impostoRepository.save(any(Imposto.class))).thenReturn(impostoSalvo);
+
+        // Act
+        ImpostoResponse response = impostoService.cadastrar(request);
+
+        // Assert
+        assertEquals(1L, response.getId());
+        assertEquals("IPI", response.getNome());
+        assertEquals("Imposto sobre Produtos Industrializados", response.getDescricao());
+        assertEquals(10.0, response.getAliquota());
+        verify(impostoRepository, times(1)).save(any(Imposto.class));
+    }
+
+    @Test
+    void cadastrar_DeveLancarExcecaoQuandoNomeJaExistir() {
+        // Arrange
+        ImpostoRequest request = new ImpostoRequest("IPI", "Imposto sobre Produtos Industrializados", 10.0);
+        when(impostoRepository.existsByNomeIgnoreCase(request.getNome())).thenReturn(true);
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> impostoService.cadastrar(request));
+        assertEquals("Já existe um imposto cadastrado com o nome: IPI", exception.getMessage());
+        verify(impostoRepository, never()).save(any(Imposto.class));
+    }
+
+    // Teste para buscar imposto por ID
+    @Test
+    void buscarPorId_DeveRetornarImpostoQuandoExistir() {
+        // Arrange
+        Long id = 1L;
+        Imposto imposto = criarImposto(id, "ICMS", "Imposto sobre Circulação de Mercadorias e Serviços", 18.0);
+        when(impostoRepository.findById(id)).thenReturn(Optional.of(imposto));
+
+        // Act
+        ImpostoResponse response = impostoService.buscarPorId(id);
+
+        // Assert
+        assertEquals(id, response.getId());
+        assertEquals("ICMS", response.getNome());
+        assertEquals("Imposto sobre Circulação de Mercadorias e Serviços", response.getDescricao());
+        assertEquals(18.0, response.getAliquota());
+    }
+
+    @Test
+    void buscarPorId_DeveLancarExcecaoQuandoNaoExistir() {
+        // Arrange
+        Long id = 1L;
+        when(impostoRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> impostoService.buscarPorId(id));
+        assertEquals("Imposto não encontrado com ID: " + id, exception.getMessage());
+    }
+
+    // Teste para excluir imposto por ID
     @Test
     void excluir_DeveExcluirImpostoQuandoExistir() {
         // Arrange
@@ -65,18 +125,49 @@ class ImpostoServiceTest {
     }
 
     @Test
-    void excluir_DeveLancarExcecaoQuandoImpostoNaoExistir() {
+    void excluir_DeveLancarExcecaoQuandoNaoExistir() {
         // Arrange
         Long id = 1L;
         when(impostoRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> impostoService.excluir(id));
-        verify(impostoRepository, times(1)).findById(id);
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> impostoService.excluir(id));
+        assertEquals("Imposto não encontrado com ID: " + id, exception.getMessage());
         verify(impostoRepository, never()).deleteById(id);
     }
 
-    // Métodos auxiliares
+    // Teste para calcular imposto
+    @Test
+    void calcularImposto_DeveRetornarValoresCalculados() {
+        // Arrange
+        Long id = 1L;
+        Double valorBase = 100.0;
+        Imposto imposto = criarImposto(id, "ICMS", "Imposto sobre Circulação de Mercadorias e Serviços", 18.0);
+        when(impostoRepository.findById(id)).thenReturn(Optional.of(imposto));
+
+        // Act
+        Map<String, Object> response = impostoService.calcularImposto(id, valorBase);
+
+        // Assert
+        assertEquals(18.0, response.get("valorImposto"));
+        assertEquals(id, response.get("tipoImpostoId"));
+        assertEquals(valorBase, response.get("valorBase"));
+        assertEquals(18.0, response.get("aliquota"));
+        assertEquals("ICMS", response.get("nomeImposto"));
+    }
+
+    @Test
+    void calcularImposto_DeveLancarExcecaoQuandoValorBaseInvalido() {
+        // Arrange
+        Long id = 1L;
+        Double valorBase = -100.0;
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> impostoService.calcularImposto(id, valorBase));
+        assertEquals("O valor base deve ser um valor positivo.", exception.getMessage());
+    }
+
+    // Método auxiliar para criar um objeto Imposto
     private Imposto criarImposto(Long id, String nome, String descricao, double aliquota) {
         Imposto imposto = new Imposto();
         imposto.setId(id);
