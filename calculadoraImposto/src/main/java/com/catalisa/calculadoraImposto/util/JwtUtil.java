@@ -17,7 +17,7 @@ public class JwtUtil {
     private Key key;
 
     @Value("${jwt.secret}")
-    private String secretKey;
+    String secretKey; //defini para “String” para conseguir acessar no teste
 
     @PostConstruct
     public void init() {
