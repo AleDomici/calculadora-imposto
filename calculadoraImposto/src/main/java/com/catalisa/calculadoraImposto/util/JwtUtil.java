@@ -63,4 +63,9 @@ public class JwtUtil {
     public String getRole(String token) {
         return getClaims(token).get("role", String.class);
     }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
 }

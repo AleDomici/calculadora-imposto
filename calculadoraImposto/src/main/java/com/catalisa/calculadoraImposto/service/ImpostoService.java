@@ -64,9 +64,8 @@ public class ImpostoService {
 
     // Excluir imposto por ID
     public void excluir(Long id) {
-        if (!impostoRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Imposto não encontrado com ID: " + id);
-        }
+        Imposto imposto = impostoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Imposto não encontrado com ID: " + id));
         impostoRepository.deleteById(id);
     }
 
