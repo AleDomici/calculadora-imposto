@@ -17,7 +17,7 @@ public class JwtUtil {
     private Key key;
 
     @Value("${jwt.secret}")
-    String secretKey; //defini para “String” para conseguir acessar no teste
+    private String secretKey;
 
     @PostConstruct
     public void init() {
@@ -62,5 +62,10 @@ public class JwtUtil {
 
     public String getRole(String token) {
         return getClaims(token).get("role", String.class);
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 }
