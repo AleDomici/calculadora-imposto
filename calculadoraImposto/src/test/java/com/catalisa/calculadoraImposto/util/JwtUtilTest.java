@@ -14,8 +14,7 @@ class JwtUtilTest {
     void setUp() {
         jwtUtil = new JwtUtil();
         // Configurando a chave secreta manualmente para o teste
-        jwtUtil.secretKey = "aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0uVwXyZ!@#%&*()-_=+?";
-        jwtUtil.init(); // Inicializa a chave secreta
+        jwtUtil.setSecretKey("aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0uVwXyZ!@#%&*()-_=+?");
     }
 
     @Test
