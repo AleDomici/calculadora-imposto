@@ -43,10 +43,16 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
         );
 
+        if (authentication == null || authentication.getAuthorities() == null || authentication.getAuthorities().isEmpty()) {
+            throw new IllegalStateException("Authentication failed or authorities are missing");
+        }
         String token = jwtUtil.generateToken(
                 authentication.getName(),
-                authentication.getAuthorities().iterator().next().getAuthority());
-
+                authentication.getAuthorities().iterator().next().getAuthority()
+        );
+        if (token == null) {
+            throw new IllegalStateException("Token generation failed");
+        }
         return ResponseEntity.ok(Map.of("token", token));
     }
 }
