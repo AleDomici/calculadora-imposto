@@ -6,6 +6,8 @@ public class ImpostoResponse {
     private String descricao;
     private Double aliquota;
 
+    public ImpostoResponse() {}
+
     // Construtor
     public ImpostoResponse(Long id, String nome, String descricao, Double aliquota) {
         this.id = id;
