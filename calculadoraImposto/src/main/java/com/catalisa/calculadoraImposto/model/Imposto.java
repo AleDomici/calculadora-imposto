@@ -3,6 +3,8 @@ package com.catalisa.calculadoraImposto.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "imposto")
 public class Imposto {
@@ -23,6 +25,7 @@ public class Imposto {
     @Column(name = "aliquota", nullable = false)
     private Double aliquota;
 
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -53,5 +56,34 @@ public class Imposto {
 
     public void setAliquota(Double aliquota) {
         this.aliquota = aliquota;
+    }
+
+    // Implementação de equals
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Imposto imposto = (Imposto) o;
+        return Objects.equals(id, imposto.id) &&
+                Objects.equals(nome, imposto.nome) &&
+                Objects.equals(descricao, imposto.descricao) &&
+                Objects.equals(aliquota, imposto.aliquota);
+    }
+
+    // Implementação de hashCode
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, nome, descricao, aliquota);
+    }
+
+    // Implementação de toString
+    @Override
+    public String toString() {
+        return "Imposto{" +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
+                ", descricao='" + descricao + '\'' +
+                ", aliquota=" + aliquota +
+                '}';
     }
 }
