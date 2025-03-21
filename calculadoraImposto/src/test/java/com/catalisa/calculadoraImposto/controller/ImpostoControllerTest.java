@@ -35,7 +35,7 @@ class ImpostoControllerTest {
     private ImpostoService impostoService;
 
     @MockBean
-    private JwtUtil jwtUtil; // Mockando o JwtUtil
+    private JwtUtil jwtUtil;
 
     private ImpostoResponse impostoResponse;
 
@@ -77,7 +77,7 @@ class ImpostoControllerTest {
 
         mockMvc.perform(get("/tipos/1")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isOk()) // Verifica o status HTTP 200
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.nome", is("ICMS")))
                 .andExpect(jsonPath("$.descricao", is("Imposto sobre Circulação de Mercadorias e Serviços")))
@@ -106,7 +106,6 @@ class ImpostoControllerTest {
                         "nomeImposto", "ICMS"
                 ));
 
-        // Executa a requisição e verifica a resposta
         mockMvc.perform(post("/tipos/calculo")
                         .with(csrf()) // Adiciona o token CSRF automaticamente
                         .contentType(MediaType.APPLICATION_JSON)
