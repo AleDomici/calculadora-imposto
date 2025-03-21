@@ -104,4 +104,11 @@ public class ImpostoController {
             return ResponseEntity.status(500).body(Map.of("erro", "Erro interno no servidor: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ImpostoResponse> buscarPorId(@PathVariable Long id) {
+        ImpostoResponse imposto = impostoService.buscarPorId(id);
+        return ResponseEntity.ok(imposto);
+    }
 }

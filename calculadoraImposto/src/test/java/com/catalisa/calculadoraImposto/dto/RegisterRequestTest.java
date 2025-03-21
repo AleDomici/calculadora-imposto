@@ -110,10 +110,15 @@ class RegisterRequestTest {
         Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(registerRequest);
 
         // Assert
-        assertEquals(2, violations.size());
-        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
-        assertEquals("A senha é obrigatória.", violation.getMessage());
-        assertEquals("password", violation.getPropertyPath().toString());
+        assertEquals(2, violations.size()); // Esperamos 2 violações: @NotBlank e @Size
+
+        boolean notBlankViolationFound = violations.stream()
+                .anyMatch(v -> v.getMessage().equals("A senha é obrigatória.") && v.getPropertyPath().toString().equals("password"));
+        boolean sizeViolationFound = violations.stream()
+                .anyMatch(v -> v.getMessage().equals("A senha deve ter pelo menos 6 caracteres.") && v.getPropertyPath().toString().equals("password"));
+
+        assertTrue(notBlankViolationFound, "A mensagem de validação @NotBlank não foi encontrada.");
+        assertTrue(sizeViolationFound, "A mensagem de validação @Size não foi encontrada.");
     }
 
     @Test
