@@ -54,16 +54,25 @@ public class UserController {
                     content = @Content(mediaType = "application/json", schema = @Schema(example = "{ \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\" }"))),
             @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
     })
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
         );
 
+        if (authentication.getAuthorities() == null || !authentication.getAuthorities().iterator().hasNext()) {
+            throw new IllegalStateException("Authentication failed or authorities are missing");
+        }
+
         String token = jwtUtil.generateToken(
                 authentication.getName(),
                 authentication.getAuthorities().iterator().next().getAuthority()
         );
+
+        if (token == null) {
+            throw new IllegalStateException("Token generation failed");
+        }
 
         return ResponseEntity.ok(Map.of("token", token));
     }
